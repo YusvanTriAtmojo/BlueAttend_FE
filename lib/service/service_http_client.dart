@@ -65,4 +65,42 @@ class ServiceHttpClient {
       throw Exception("GET request failed: $e");
     }
   }
+
+  Future<http.Response> put(String endPoint, Map<String, dynamic> body) async {
+    final token = await secureStorage.read(key: "authToken");
+    final url = Uri.parse("$baseUrl$endPoint");
+
+    try {
+      final response = await http.put(
+        url,
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(body),
+      );
+      return response;
+    } catch (e) {
+      throw Exception("PUT request with token failed: $e");
+    }
+  }
+
+  Future<http.Response> delete(String endPoint) async {
+    final token = await secureStorage.read(key: "authToken");
+    final url = Uri.parse("$baseUrl$endPoint");
+    try {
+      final response = await http.delete(
+        url,
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+      );
+      return response;
+    } catch (e) {
+      throw Exception("DELETE request with token failed: $e");
+    }
+  }
 }
