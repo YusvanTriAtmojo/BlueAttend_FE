@@ -13,7 +13,7 @@ class SesiRepository {
 
   Future<Either<String, GetAllSesiResponseModel>> getAllSesi() async {
     try {
-      final response = await httpClient.get("sesi");
+      final response = await httpClient.get("event");
 
       if (response.statusCode == 200) {
         final jsonResponse = json.decode(response.body);
@@ -31,7 +31,7 @@ class SesiRepository {
   Future<Either<String, String>> createSesi(SesiRequestModel request) async {
     try {
       final response = await httpClient.postWithToken(
-        "sesi",
+        "event",
         request.toJson(),
       );
 
@@ -52,7 +52,7 @@ class SesiRepository {
   ) async {
     try {
       final response = await httpClient.put(
-        "sesi/$id",
+        "event/$id",
         request.toJson(),
       );
 
@@ -70,7 +70,7 @@ class SesiRepository {
   Future<Either<String, String>> deleteSesi(int id) async {
     try {
       final response = await httpClient.delete(
-        "sesi/$id",
+        "event/$id",
       );
 
       if (response.statusCode == 200) {
