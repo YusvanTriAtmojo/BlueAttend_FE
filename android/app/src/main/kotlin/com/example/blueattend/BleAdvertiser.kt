@@ -17,12 +17,10 @@ import java.util.UUID
 class BleAdvertiser(private val context: Context) 
 {
     companion object {
-        private const val DEVICE_NAME = "UMY"
-
-        private val SERVICE_UUID = UUID.fromString(
-            "19121981-98d4-4568-6212-169eebd37705"
-        )
+    private const val DEVICE_NAME = "UMY"
     }
+    
+    private lateinit var serviceUuid: UUID
 
     private val bluetoothManager =
         context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
@@ -81,13 +79,13 @@ class BleAdvertiser(private val context: Context)
         return AdvertiseData.Builder()
             .setIncludeDeviceName(false)
             .addServiceUuid(
-                ParcelUuid(SERVICE_UUID)
+                ParcelUuid(serviceUuid)
             )
             .build()
     }
 
-    fun startAdvertising() {
-
+    fun startAdvertising(uuid: String) {
+        serviceUuid = UUID.fromString(uuid)
         if (isAdvertising) {
             Log.d("BLE", "Advertising sudah berjalan")
             return
@@ -153,7 +151,7 @@ class BleAdvertiser(private val context: Context)
         return AdvertiseData.Builder()
             .setIncludeDeviceName(true)
             .addServiceData(
-                ParcelUuid(SERVICE_UUID),
+                ParcelUuid(serviceUuid),
                 generateServiceData()
             )
             .build()
