@@ -23,29 +23,32 @@ class AuthResponseModel {
 }
 
 class User {
-    final int id;
-    final String nama;
-    final String nip;
-    final String notlp;
-    final String alamat;
-    final String email;
-    final String token;
-    final String role;
+  final int id;
+  final String nama;
+  final String nip;
+  final String notlp;
+  final String alamat;
+  final String email;
+  final String token;
+  final String role;
+  final String? fotoProfile;
 
-    User({
-        required this.id,
-        required this.nama,
-        required this.nip,
-        required this.notlp,
-        required this.alamat,
-        required this.email,
-        required this.token,
-        required this.role,
-    });
+  User({
+    required this.id,
+    required this.nama,
+    required this.nip,
+    required this.notlp,
+    required this.alamat,
+    required this.email,
+    required this.token,
+    required this.role,
+    required this.fotoProfile,
+  });
 
-    factory User.fromRawJson(String str) => User.fromJson(json.decode(str));
+  factory User.fromRawJson(String str) =>
+      User.fromJson(json.decode(str));
 
-    factory User.fromJson(Map<String, dynamic> json) => User(
+  factory User.fromJson(Map<String, dynamic> json) => User(
         id: json["id"],
         nama: json["nama"],
         nip: json["nip"],
@@ -54,6 +57,6 @@ class User {
         email: json["email"],
         token: json["token"],
         role: json["role"],
-    );
-
+        fotoProfile: json["foto_profile"],
+      );
 }
