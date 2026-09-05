@@ -5,6 +5,7 @@ import 'package:blueattend/data/model/response/get_all_ble_response_model.dart';
 import 'package:blueattend/presentation/admin/ble/bloc/ble_bloc.dart';
 import 'package:blueattend/presentation/admin/ble/ble_add_screen.dart';
 import 'package:blueattend/presentation/admin/ble/ble_edit_screen.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class BleScreen extends StatefulWidget {
   const BleScreen({super.key});
@@ -20,6 +21,18 @@ class _BleScreenState extends State<BleScreen> {
   void initState() {
     super.initState();
     context.read<BleBloc>().add(BleRequested());
+  }
+
+  Future<bool> _requestBlePermissions() async {
+    final statuses =
+        await [
+          Permission.bluetoothScan,
+          Permission.bluetoothConnect,
+          Permission.bluetoothAdvertise,
+          Permission.locationWhenInUse,
+        ].request();
+
+    return statuses.values.every((status) => status.isGranted);
   }
 
   @override
@@ -218,7 +231,27 @@ class _BleScreenState extends State<BleScreen> {
                                           activeColor: const Color(0xFF6C9BD2),
                                           onChanged: (value) async {
                                             if (value) {
-                                              await ServiceBleAdvertiser.startAdvertising();
+                                              final granted =
+                                                  await _requestBlePermissions();
+                                              if (!context.mounted) return;
+                                              if (!granted) {
+                                                ScaffoldMessenger.of(
+                                                  context,
+                                                ).showSnackBar(
+                                                  const SnackBar(
+                                                    content: Text(
+                                                      'Permission Bluetooth belum diberikan',
+                                                    ),
+                                                  ),
+                                                );
+                                                return;
+                                              }
+
+                                              await ServiceBleAdvertiser.startAdvertising(
+                                                ble.uuid,
+                                              );
+
+                                              if (!mounted) return;
 
                                               setState(() {
                                                 advertisingBleId = ble.id;
@@ -226,6 +259,7 @@ class _BleScreenState extends State<BleScreen> {
                                             } else {
                                               await ServiceBleAdvertiser.stopAdvertising();
 
+                                              if (!mounted) return;
                                               setState(() {
                                                 advertisingBleId = null;
                                               });
@@ -267,17 +301,15 @@ class _BleScreenState extends State<BleScreen> {
                                                 color: Colors.black,
                                               ),
                                               onPressed: () async {
+                                                final bleBloc =
+                                                    context.read<BleBloc>();
                                                 final result = await Navigator.push(
                                                   context,
                                                   MaterialPageRoute(
                                                     builder:
-                                                        (context) =>
+                                                        (_) =>
                                                             BlocProvider.value(
-                                                              value:
-                                                                  context
-                                                                      .read<
-                                                                        BleBloc
-                                                                      >(),
+                                                              value: bleBloc,
                                                               child:
                                                                   BleEditScreen(
                                                                     ble: ble,
@@ -287,8 +319,7 @@ class _BleScreenState extends State<BleScreen> {
                                                 );
 
                                                 if (!context.mounted) return;
-                                                if (result != null &&
-                                                    result == true) {
+                                                if (result == true) {
                                                   context.read<BleBloc>().add(
                                                     BleRequested(),
                                                   );
@@ -438,23 +469,25 @@ class _BleScreenState extends State<BleScreen> {
         padding: const EdgeInsets.only(bottom: 20),
         child: FloatingActionButton(
           onPressed: () async {
+            final bleBloc = context.read<BleBloc>();
+
             final result = await Navigator.push(
               context,
               MaterialPageRoute(
                 builder:
-                    (context) => BlocProvider.value(
-                      value: context.read<BleBloc>(),
+                    (_) => BlocProvider.value(
+                      value: bleBloc,
                       child: BleAddScreen(),
                     ),
               ),
             );
 
             if (!context.mounted) return;
-            if (result != null && result == true) {
+            if (result == true) {
               context.read<BleBloc>().add(BleRequested());
             }
           },
-          backgroundColor: Color(0xFF003C97),
+          backgroundColor: const Color(0xFF003C97),
           child: const Icon(Icons.add, color: Colors.white),
         ),
       ),
