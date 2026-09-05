@@ -6,7 +6,7 @@ import 'package:http/http.dart' as http;
 
 class ServiceHttpClient {
   final String baseUrl =
-      'http://127.0.0.1:8000/api/'; //Sesuaikan domain atau IP jaringan
+      'http://192.168.100.6:8000/api/'; //Sesuaikan domain atau IP jaringan
   final secureStorage = FlutterSecureStorage();
 
   Future<http.Response> post(String endPoint, Map<String, dynamic> body) async {
@@ -45,6 +45,56 @@ class ServiceHttpClient {
       return response;
     } catch (e) {
       throw Exception("POST request failed: $e");
+    }
+  }
+
+  Future<http.Response> postMultipartWithToken(
+    String endPoint, {
+    Map<String, String>? fields,
+    Map<String, File>? files,
+  }) async {
+    final token = await secureStorage.read(
+      key: "authToken",
+    );
+
+    final url = Uri.parse("$baseUrl$endPoint");
+
+    try {
+      final request = http.MultipartRequest(
+        'POST',
+        url,
+      );
+
+      request.headers.addAll({
+        'Authorization': 'Bearer $token',
+        'Accept': 'application/json',
+      });
+
+      if (fields != null) {
+        request.fields.addAll(fields);
+      }
+
+      if (files != null) {
+        for (final entry in files.entries) {
+          request.files.add(
+            await http.MultipartFile.fromPath(
+              entry.key,
+              entry.value.path,
+            ),
+          );
+        }
+      }
+
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(
+        streamedResponse,
+      );
+
+      return response;
+    } catch (e) {
+      throw Exception(
+        "POST multipart request failed: $e",
+      );
     }
   }
 
