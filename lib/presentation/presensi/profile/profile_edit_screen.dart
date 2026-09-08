@@ -49,23 +49,17 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
             Container(
               height: 60,
               width: double.infinity,
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [Color(0xFF003C97), Color(0xFF0056D6)],
-                ),
-              ),
+              color: Color(0xFF003C97),
               child: Stack(
                 children: [
                   Positioned(
                     right: -20,
                     top: -30,
                     child: Container(
-                      width: 120,
+                      width: 100,
                       height: 100,
                       decoration: BoxDecoration(
-                        color: Colors.blueAccent,
+                        color: Color(0xFFFFF8E1),
                         shape: BoxShape.circle,
                       ),
                     ),
@@ -76,9 +70,9 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                     bottom: -60,
                     child: Container(
                       width: 150,
-                      height: 100,
-                      decoration: BoxDecoration(
-                        color: Color(0xFFFF7A00),
+                      height: 110,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF6C9BD2),
                         shape: BoxShape.circle,
                       ),
                     ),
@@ -89,7 +83,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                     top: 0,
                     bottom: 0,
                     child: IconButton(
-                      icon: Icon(
+                      icon: const Icon(
                         Icons.arrow_circle_left_outlined,
                         color: Colors.white,
                         size: 35,
@@ -98,9 +92,9 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                     ),
                   ),
 
-                  Center(
+                  const Center(
                     child: Text(
-                      "Edit Profil",
+                      "Edit Profile",
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 20,
