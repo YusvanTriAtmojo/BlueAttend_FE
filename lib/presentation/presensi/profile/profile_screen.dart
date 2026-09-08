@@ -6,6 +6,7 @@ import 'package:blueattend/presentation/presensi/profile/bloc/profile_bloc.dart'
 import 'package:blueattend/presentation/presensi/profile/profile_edit_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -15,12 +16,26 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  final FlutterSecureStorage storage = const FlutterSecureStorage();
   String? fotoProfile;
 
   @override
   void initState() {
     super.initState();
-    context.read<Bloc>().add(GetProfileRequested());
+    _loadProfile();
+    context.read<ProfileBloc>().add(GetProfileRequested());
+  }
+
+  Future<void> _loadProfile() async {
+    final foto = await storage.read(key: "foto_profile");
+
+    debugPrint("Foto profile = $foto");
+
+    if (!mounted) return;
+
+    setState(() {
+      fotoProfile = foto;
+    });
   }
 
   @override
@@ -36,122 +51,207 @@ class _ProfileScreenState extends State<ProfileScreen> {
         }
       },
       child: Scaffold(
-        body: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Color(0xFF7A8FB1), Color(0xFFE7EBFF)],
-            ),
-          ),
-          child: SafeArea(
-            child: BlocConsumer<ProfileBloc, ProfileState>(
-              listener: (context, state) {
-                if (state is ProfileFailure) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        state.error,
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontWeight: FontWeight.bold,
+        resizeToAvoidBottomInset: false,
+        backgroundColor: Colors.grey,
+        body: SafeArea(
+          child: Column(
+            children: [
+              Container(
+                height: 60,
+                width: double.infinity,
+                color: Color(0xFF003C97),
+                child: Stack(
+                  children: [
+                    Positioned(
+                      right: -20,
+                      top: -30,
+                      child: Container(
+                        width: 100,
+                        height: 100,
+                        decoration: BoxDecoration(
+                          color: Color(0xFFFFF8E1),
+                          shape: BoxShape.circle,
                         ),
                       ),
-                      duration: Duration(seconds: 2),
-                      backgroundColor: Colors.white,
-                      behavior: SnackBarBehavior.floating,
-                      margin: EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 10,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      elevation: 6,
                     ),
-                  );
-                }
-              },
-              builder: (context, state) {
-                if (state is ProfileLoading) {
-                  return Center(
-                    child: CircularProgressIndicator(color: Color(0xFF002F87)),
-                  );
-                } else if (state is ProfileLoaded) {
-                  final DataUser profile = state.profile;
 
-                  return ListView(
-                    padding: EdgeInsets.only(
-                      left: 20,
-                      right: 20,
-                      top: 20,
-                      bottom: 60,
-                    ),
-                    children: [
-                      SizedBox(height: 16),
-                      Center(
-                        child: Stack(
-                          children: [
-                            CircleAvatar(
-                              radius: 100,
-                              backgroundColor: Colors.grey.shade200,
-                              backgroundImage:
-                                  fotoProfile != null && fotoProfile!.isNotEmpty
-                                      ? NetworkImage(fotoProfile!)
-                                      : const AssetImage(
-                                            'assets/images/profile.png',
-                                          )
-                                          as ImageProvider,
-                            ),
-                            Positioned(
-                              right: 4,
-                              bottom: 4,
-                              child: GestureDetector(
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => DaftarWajahScreen(),
-                                    ),
-                                  );
-                                },
-                                child: const CircleAvatar(
-                                  radius: 16,
-                                  backgroundColor: Colors.blueAccent,
-                                  child: Icon(
-                                    Icons.edit,
-                                    color: Colors.white,
-                                    size: 16,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
+                    Positioned(
+                      right: -60,
+                      bottom: -60,
+                      child: Container(
+                        width: 150,
+                        height: 110,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFF6C9BD2),
+                          shape: BoxShape.circle,
                         ),
                       ),
-                      SizedBox(height: 30),
-                      Text(
-                        "Data Diri",
-                        textAlign: TextAlign.center,
+                    ),
+
+                    Positioned(
+                      left: 10,
+                      top: 0,
+                      bottom: 0,
+                      child: IconButton(
+                        icon: const Icon(
+                          Icons.arrow_circle_left_outlined,
+                          color: Colors.white,
+                          size: 35,
+                        ),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ),
+
+                    const Center(
+                      child: Text(
+                        "Data Profile",
                         style: TextStyle(
+                          color: Colors.white,
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF002F87),
                         ),
                       ),
-                      SizedBox(height: 10),
-                      dataProfile(Icons.person, "Nama", profile.nama),
-                      dataProfile(Icons.key_outlined, "NIP", profile.nip),
-                      dataProfile(Icons.email, "Email", profile.email),
-                      dataProfile(Icons.phone, "Nomor Telepon", profile.notlp),
-                      dataProfile(Icons.location_on, "Alamat", profile.alamat),
-                    ],
-                  );
-                } else {
-                  return Center(child: Text("Belum ada data Klien"));
-                }
-              },
-            ),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [Color(0xFF7A8FB1), Color(0xFFE7EBFF)],
+                    ),
+                  ),
+                  child: SafeArea(
+                    child: BlocConsumer<ProfileBloc, ProfileState>(
+                      listener: (context, state) {
+                        if (state is ProfileFailure) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                state.error,
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              duration: Duration(seconds: 2),
+                              backgroundColor: Colors.white,
+                              behavior: SnackBarBehavior.floating,
+                              margin: EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 10,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              elevation: 6,
+                            ),
+                          );
+                        }
+                      },
+                      builder: (context, state) {
+                        if (state is ProfileLoading) {
+                          return Center(
+                            child: CircularProgressIndicator(
+                              color: Color(0xFF002F87),
+                            ),
+                          );
+                        } else if (state is ProfileLoaded) {
+                          final DataUser profile = state.profile;
+
+                          return ListView(
+                            padding: EdgeInsets.only(
+                              left: 20,
+                              right: 20,
+                              top: 20,
+                              bottom: 60,
+                            ),
+                            children: [
+                              SizedBox(height: 16),
+                              Center(
+                                child: Stack(
+                                  children: [
+                                    CircleAvatar(
+                                      radius: 100,
+                                      backgroundColor: Colors.grey.shade200,
+                                      backgroundImage:
+                                          fotoProfile != null &&
+                                                  fotoProfile!.isNotEmpty
+                                              ? NetworkImage(fotoProfile!)
+                                              : const AssetImage(
+                                                    'assets/images/profile.png',
+                                                  )
+                                                  as ImageProvider,
+                                    ),
+                                    Positioned(
+                                      right: 4,
+                                      bottom: 4,
+                                      child: GestureDetector(
+                                        onTap: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder:
+                                                  (_) => DaftarWajahScreen(),
+                                            ),
+                                          );
+                                        },
+                                        child: const CircleAvatar(
+                                          radius: 23,
+                                          backgroundColor: Color(0xFFFFF8E1),
+                                          child: Icon(
+                                            Icons.edit,
+                                            color: Color(0xFF003C97),
+                                            size: 20,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              SizedBox(height: 30),
+                              Text(
+                                "Data Diri",
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF002F87),
+                                ),
+                              ),
+                              SizedBox(height: 10),
+                              dataProfile(Icons.person, "Nama", profile.nama),
+                              dataProfile(
+                                Icons.key_outlined,
+                                "NIP",
+                                profile.nip,
+                              ),
+                              dataProfile(Icons.email, "Email", profile.email),
+                              dataProfile(
+                                Icons.phone,
+                                "Nomor Telepon",
+                                profile.notlp,
+                              ),
+                              dataProfile(
+                                Icons.location_on,
+                                "Alamat",
+                                profile.alamat,
+                              ),
+                            ],
+                          );
+                        } else {
+                          return Center(child: Text("Belum ada data Klien"));
+                        }
+                      },
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
         floatingActionButton: Padding(
@@ -190,7 +290,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Color(0xFF003C97),
+            color: Color(0xFFFFF8E1),
             blurRadius: 2,
             offset: Offset(0, 6),
           ),
@@ -198,7 +298,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
       child: Row(
         children: [
-          Icon(icon, color: Color(0xFFFF7A00)),
+          Icon(icon, color: Color(0xFF6C9BD2)),
           SizedBox(width: 16),
           Expanded(
             child: Column(
