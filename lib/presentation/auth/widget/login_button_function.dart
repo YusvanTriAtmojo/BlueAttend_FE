@@ -1,3 +1,4 @@
+import 'package:blueattend/presentation/presensi/faceRegister/daftar_wajah_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -42,9 +43,11 @@ class LoginButtonFunction extends StatelessWidget {
         } else if (state is LoginSuccess) {
           final role = state.responseModel.user.role;
           final storage = FlutterSecureStorage();
+          final user = state.responseModel.user;
 
           await storage.write(key: "userRole", value: role);
           await storage.write(key: "isLoggedIn", value: "true");
+          await storage.write(key: "foto_profile", value: user.fotoProfile ?? "");
 
           if (!context.mounted) return;
           if (role == 'admin') {
@@ -54,11 +57,21 @@ class LoginButtonFunction extends StatelessWidget {
               (route) => false,
             );
           } else if (role == 'peserta') {
-            Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(builder: (_) => HomeScreen()),
-              (route) => false,
-            );
+            final user = state.responseModel.user;
+
+            if (user.fotoProfile == null) {
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (_) => DaftarWajahScreen()),
+                (route) => false,
+              );
+            } else {
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute( builder: (_) => HomeScreen(),),
+                (route) => false,
+              );
+            }
           } else {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
