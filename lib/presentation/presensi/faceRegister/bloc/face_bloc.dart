@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:bloc/bloc.dart';
 import 'package:blueattend/data/repository/face_repository.dart';
 import 'package:blueattend/service/service_mobile_face_net.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:meta/meta.dart';
 
@@ -14,6 +15,7 @@ class FaceBloc extends Bloc<FaceEvent, FaceState> {
 
   final ImagePicker _picker = ImagePicker();
   final ServiceMobileFaceNet _faceNet = ServiceMobileFaceNet();
+  final FlutterSecureStorage _storage = FlutterSecureStorage();
 
   FaceBloc({required this.faceRepository}) : super(FaceInitial()) {
     on<FaceInitializeRequested>(_onInitialize);
@@ -71,16 +73,27 @@ class FaceBloc extends Bloc<FaceEvent, FaceState> {
         faceEmbedding: embedding,
       );
 
-      result.fold(
-        (errorMessage) => emit(FaceFailure(error: errorMessage)),
-        (faceResponse) => emit(
-          FaceSaveSuccess(
-            message: faceResponse.message,
-          ),
-        ),
+      await result.fold(
+        (errorMessage) async {emit(FaceFailure(error: errorMessage));},
+        (faceResponse) async {
+          // ambil foto terbaru dari response data
+          final fotoProfile = faceResponse.fotoProfile;
+
+          // simpan foto ke secure storage
+          if (fotoProfile != null && fotoProfile.isNotEmpty) {
+            await _storage.write(
+              key: 'foto_profile',
+              value: fotoProfile,
+            );
+          }
+          emit(FaceSaveSuccess(message: faceResponse.message),
+          );
+        },
       );
     } catch (e) {
-      emit(FaceFailure(error: 'Gagal memproses gambar: ${e.toString()}'));
+      emit(
+        FaceFailure(
+          error: 'Gagal memproses gambar: ${e.toString()}'));
     }
   }
 }
