@@ -1,10 +1,12 @@
 import 'dart:io';
 
+import 'package:blueattend/presentation/presensi/camera/bloc/camera_bloc.dart';
 import 'package:blueattend/presentation/presensi/camera/face_camera_screen.dart';
 import 'package:blueattend/presentation/presensi/faceRegister/bloc/face_bloc.dart';
 import 'package:blueattend/presentation/presensi/home/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 
 class DaftarWajahScreen extends StatefulWidget {
    const DaftarWajahScreen({super.key});
@@ -144,7 +146,7 @@ class _DaftarWajahScreenState extends State<DaftarWajahScreen> {
                       ],
                     ),
 
-                   SizedBox(height: 20),
+                  SizedBox(height: 20),
                   SizedBox(
                     width: double.infinity,
                     height: 52,
@@ -152,12 +154,20 @@ class _DaftarWajahScreenState extends State<DaftarWajahScreen> {
                       onPressed: loading
                           ? null
                           : () async {
-                              final File? capturedImage =
-                                  await Navigator.push<File>(
+                              final File? capturedImage = 
+                                await Navigator.push<File>(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (_) =>
-                                       CustomFaceCameraScreen(),
+                                  builder: (_) => BlocProvider(
+                                    create: (_) => CameraBloc(
+                                      faceDetector: FaceDetector(
+                                        options: FaceDetectorOptions(
+                                          performanceMode: FaceDetectorMode.fast,
+                                        ),
+                                      ),
+                                    ),
+                                    child: FaceCameraScreen(),
+                                  ),
                                 ),
                               );
 
@@ -186,7 +196,7 @@ class _DaftarWajahScreenState extends State<DaftarWajahScreen> {
                     )
                   ),
 
-                   SizedBox(height: 12),
+                  SizedBox(height: 12),
                   SizedBox(
                     width: double.infinity,
                     height: 52,
@@ -209,7 +219,7 @@ class _DaftarWajahScreenState extends State<DaftarWajahScreen> {
                                   color: Colors.white,
                                 ),
                               )
-                              :  Text('Simpan Wajah'),
+                              :  Text('Simpan Wajah', style: TextStyle(color: Color(0xFF6C9BD2)),),
                     ),
                   ),
 
