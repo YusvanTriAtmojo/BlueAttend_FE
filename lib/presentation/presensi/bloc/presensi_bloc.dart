@@ -29,23 +29,35 @@ class PresensiBloc extends Bloc<PresensiEvent, PresensiState> {
   ) async {
     emit(PresensiLoading());
 
-    await [Permission.bluetoothScan, Permission.bluetoothConnect].request();
+    try {
+      final permissions = await [
+        Permission.bluetoothScan,
+        Permission.bluetoothConnect,
+      ].request();
 
-    final adapterState = await FlutterBluePlus.adapterState.first;
-
-    if (adapterState != BluetoothAdapterState.on) {
-      try {
-        await FlutterBluePlus.turnOn();
-        await FlutterBluePlus.adapterState
-            .where((s) => s == BluetoothAdapterState.on)
-            .first;
-      } catch (_) {
-        emit(PresensiFailure("Bluetooth diperlukan untuk presensi"));
+      if (permissions[Permission.bluetoothScan] != PermissionStatus.granted ||
+          permissions[Permission.bluetoothConnect] != PermissionStatus.granted) {
+        emit(
+          PresensiFailure(
+            "Izin Bluetooth diperlukan untuk presensi",
+          ),
+        );
         return;
       }
-    }
 
-    emit(PresensiBleReady());
+      final state = await FlutterBluePlus.adapterState.first;
+      if (state != BluetoothAdapterState.on) {
+        await FlutterBluePlus.turnOn();
+      }
+
+      emit(PresensiBleReady());
+    } catch (e) {
+      emit(
+        PresensiFailure(
+          "Bluetooth diperlukan untuk presensi",
+        ),
+      );
+    }
   }
 
   Future<void> _riwayatPresensi(
@@ -113,7 +125,6 @@ class PresensiBloc extends Bloc<PresensiEvent, PresensiState> {
             for (final serviceUuid in result.advertisementData.serviceUuids) {
               final uuidStr = serviceUuid.toString();
 
-              // Filter UUID berdasarkan prefix
               if (!uuidStr.startsWith(prefix)) {
                 continue;
               }
