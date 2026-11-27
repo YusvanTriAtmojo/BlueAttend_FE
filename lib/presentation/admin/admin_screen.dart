@@ -80,7 +80,7 @@ class _AdminScreenState extends State<AdminScreen> {
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Image.asset('assets/images/uuid.png', height: 80),
+                            Image.asset('assets/images/ble.png', height: 80),
                             const SizedBox(height: 8),
                             Text(
                               "BLE",

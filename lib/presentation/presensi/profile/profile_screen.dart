@@ -290,7 +290,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Color(0xFFFFF8E1),
+            color: Color(0xFF003C97),
             blurRadius: 2,
             offset: Offset(0, 6),
           ),
